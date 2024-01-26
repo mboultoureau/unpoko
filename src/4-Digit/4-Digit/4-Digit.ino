@@ -2,9 +2,15 @@
 
 //Include Grove-4 digit display Itbrary
 
-#define CLK 2//pins definitions for TM1637 and can be changed to other ports
-#define DIO 3 
-// Branché sur le D2
+
+// Branché sur le D2 => CLK = 2 et DIO = 3
+// Branché sur le D4 => CLK = 4 et DIO = 5
+
+// #define CLK 2
+// #define DIO 3 
+
+#define CLK 4
+#define DIO 5
 
 TM1637 tm1637(CLK, DIO);
 
