@@ -10,54 +10,7 @@ int moisture_value = 0;
 
 TM1637 tm1637(DIGIT_4_CLK, DIGIT_4_DIO);
 
-// struct SecondaryDevice {
-//   int deviceId;
-
-//   bool has_soil_humidity;
-//   bool has_room_humidity;
-//   bool has_temperature;
-//   bool has_co2;
-//   bool has_luminosity;
-
-//   float low_soil_humidity;
-//   float high_soil_humidity;
-//   float low_room_humidity;
-//   float high_room_humidity;
-//   float low_temperature;
-//   float high_temperature;
-//   float low_co2;
-//   float high_co2;
-//   float low_luminosity;
-//   float high_luminosity;
-
-//   float soil_humidity[32];
-//   float room_humidity[32];
-//   float temperature[32];
-//   float co2[32];
-//   float luminosity[32];
-// };
-
-// enum Error {
-//   NONE = 0,
-//   SOIL_HUMIDITY_TOO_HIGH = 1,
-//   SOIL_HUMIDITY_TOO_LOW = 2,
-//   ROOM_HUMIDITY_TOO_HIGH = 3,
-//   ROOM_HUMIDITY_TOO_LOW = 4,
-//   LUMINOSITY_TOO_HIGH = 5,
-//   LUMINOSITY_TOO_LOW = 6,
-//   TEMPERATURE_TOO_HIGH = 7,
-//   TEMPERATURE_TOO_LOW = 8,
-//   CO2_TOO_HIGH = 9,
-//   CO2_TOO_LOW = 10,
-//   MULTIPLE_ERRORS = 11
-// };
-
-bool isPrimaryDevice = IS_PRIMARY_DEVICE;
-
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Unpoko 🤠🌵: Starting program");
-
   if (IS_PRIMARY_DEVICE) {
     setupMasterBluetooth();
   } else {
@@ -81,6 +34,8 @@ bool sendATCommand(const char* command, const char* expectedResponse) {
 
 void setupSlaveBluetooth() {
   Serial3.begin(9600);  // Start Serial3 at the new baud rate
+  Serial.begin(9600);
+  Serial.println("Unpoko 🤠🌵: Starting program");
   delay(1000);
   Serial.println("Slave Bluetooth Ready");
 }
@@ -88,6 +43,9 @@ void setupSlaveBluetooth() {
 void setupMasterBluetooth() {
   pinMode(9, OUTPUT);
   digitalWrite(9, HIGH);
+
+  Serial.begin(9600);
+  Serial.println("Unpoko 🤠🌵: Starting program");
   Serial3.begin(38400);
 
   if (!sendATCommand("AT", "OK")) {
@@ -152,32 +110,33 @@ void loop() {
   }
 
   while (Serial3.available()) {
-    char receivedByte = Serial3.read();
-    // Serial.write(receivedByte);
-    // Serial3.write(receivedByte);
+    String receivedData = Serial3.readStringUntil('\n');
+    Serial.println(receivedData);
 
     if (IS_PRIMARY_DEVICE) {
-      int units = receivedByte % 10;
-      int tens = (receivedByte / 10) % 10;
-      int hundreds = (receivedByte / 100) % 10;
-      int thousands = (receivedByte / 1000) % 10;
+      if(receivedData.startsWith("moisture_level ")) {
+        // Extracting moisture value from the received data
+        int moistureValue = receivedData.substring(15).toInt();
 
-      tm1637.display(0, thousands); // Affiche '1' à la position 0
-      tm1637.display(1, hundreds); // Affiche '2' à la position 1
-      tm1637.display(2, tens); // Affiche '3' à la position 2
-      tm1637.display(3, units); // Affiche '4' à la position 3
+        // Now you can handle the moisture value as needed
+        // For example, you can display it on your tm1637 display
+        int units = moistureValue % 10;
+        int tens = (moistureValue / 10) % 10;
+        int hundreds = (moistureValue / 100) % 10;
+        int thousands = (moistureValue / 1000) % 10;
+
+        tm1637.display(0, thousands); // Affiche '1' à la position 0
+        tm1637.display(1, hundreds); // Affiche '2' à la position 1
+        tm1637.display(2, tens); // Affiche '3' à la position 2
+        tm1637.display(3, units); // Affiche '4' à la position 3
+      }
     }
   }
 
   if (!IS_PRIMARY_DEVICE) {
     moisture_value = analogRead(A0);
-    Serial.println(moisture_value);
-    Serial3.write(moisture_value);
+    Serial3.print("moisture_level ");
+    Serial3.println(moisture_value);
     delay(1000);
   }
-
-  // tm1637.display(0, 1); // Affiche '1' à la position 0
-  // tm1637.display(1, 2); // Affiche '2' à la position 1
-  // tm1637.display(2, 3); // Affiche '3' à la position 2
-  // tm1637.display(3, 4); // Affiche '4' à la position 3
 }
