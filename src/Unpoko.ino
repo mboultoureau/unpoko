@@ -1,7 +1,12 @@
 #include <stdbool.h>
 #include "TM1637.h"
+#include "ChainableLED.h"
 
 #define IS_PRIMARY_DEVICE true
+
+#define NUM_LEDS  5
+
+ChainableLED leds(7, 8, NUM_LEDS);
 
 int moisture_value = 0;
 
@@ -46,6 +51,7 @@ void setupMasterBluetooth() {
 
   Serial.begin(9600);
   Serial.println("Unpoko 🤠🌵: Starting program");
+  Serial2.begin(9600);
   Serial3.begin(38400);
 
   if (!sendATCommand("AT", "OK")) {
@@ -129,6 +135,32 @@ void loop() {
         tm1637.display(1, hundreds); // Affiche '2' à la position 1
         tm1637.display(2, tens); // Affiche '3' à la position 2
         tm1637.display(3, units); // Affiche '4' à la position 3
+
+        Serial2.println("Moisture level " + String(moistureValue));
+      } else if (receivedData.startsWith("disco ")) {
+        Serial.println("Enable disco mode");
+        Serial3.println("disco start");
+      }
+    } else {
+      if (receivedData.startsWith("disco ")) {
+        for (int j = 0; j < 256; j++) {
+          for (int i = 0; i < NUM_LEDS; i++) {
+            leds.setColorRGB(i, random(256), random(256), random(256));
+          }
+          delay(50);
+        }
+      }
+    }
+  }
+
+  while (Serial2.available()) {
+    String receivedData = Serial2.readStringUntil('\n');
+    Serial.println(receivedData);
+
+    if (IS_PRIMARY_DEVICE) {
+      if(receivedData.startsWith("disco ")) {
+        Serial.print("Enable disco mode");
+        Serial3.println("disco start");
       }
     }
   }
