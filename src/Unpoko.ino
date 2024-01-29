@@ -2,6 +2,7 @@
 #include "TM1637.h"
 #include "ChainableLED.h"
 
+// Change if needed (master / slave)
 #define IS_PRIMARY_DEVICE true
 
 #define NUM_LEDS  5
