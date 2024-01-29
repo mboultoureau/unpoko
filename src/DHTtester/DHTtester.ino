@@ -4,8 +4,8 @@
 #include "Grove_Temperature_And_Humidity_Sensor.h"
 
 // Uncomment whatever type you're using!
-//#define DHTTYPE DHT11   // DHT 11
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
+#define DHTTYPE DHT11   // DHT 11
+//#define DHTTYPE DHT22   // DHT 22  (AM2302)
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 //#define DHTTYPE DHT10   // DHT 10
 //#define DHTTYPE DHT20   // DHT 20
@@ -54,10 +54,10 @@ void loop() {
 
     if (!dht.readTempAndHumidity(temp_hum_val)) {
         Serial.print("Humidity: ");
-        Serial.print(temp_hum_val[0]/190);
+        Serial.print(temp_hum_val[0]);
         Serial.print(" %\t");
         Serial.print("Temperature: ");
-        Serial.print(temp_hum_val[1]/190);
+        Serial.print(temp_hum_val[1]);
         Serial.println(" *C");
     } else {
         Serial.println("Failed to get temprature and humidity value.");
